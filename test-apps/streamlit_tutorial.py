@@ -12,9 +12,9 @@ df.dropna(inplace=True)
 st.write('Anything that is shown in a line in a streamlit app will be displayed.')
 st.write(df.head())
 st.write(df.isna().sum())
-st.write(df.info())
+# st.write(df.info())
 
-map_df = df[['lat','long','price']]
+map_df = df[['lat','long','price']].copy()
 map_df.rename({"long":'lon'},axis=1,inplace=True)
 
 if st.checkbox('Show map'):
