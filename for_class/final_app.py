@@ -1,6 +1,10 @@
 import datetime as dt
 from datetime import date
-import pandas_datareader as pdr
+import time 
+
+from pandas_datareader import data as pdr
+import yfinance as yfin
+yfin.pdr_override()
 
 import dash
 import dash_core_components as dcc
@@ -17,31 +21,43 @@ plt.rcParams['figure.figsize'] = (12,4)
 
 import plotly.express as px
 import plotly.io as pio
-pio.templates
+pio.templates.default = "plotly_dark"
 
+from jupyter_dash import JupyterDash
 
+## Saving today for use in functions and app
 today = dt.date.today().strftime("%Y-%m-%d")
-def get_data(start_date='2012-02-01',end_date=today,symbols = ['FB','AAPL','GOOGL','AMZN','MSFT']):
-    
+def get_data(start_date='2012-02-01',end_date=today,
+             symbols = ['FB','AAPL','GOOGL','AMZN','MSFT','TSLA']):
+    """ Gets the historical stock dataa for the provided symbols for the 
+    time period requested 
+    """
     data = {}
     for stock in symbols:
+        time.sleep(0.1)
         try:
-            data[stock] = pdr.DataReader(stock,'yahoo',start_date,end_date)['Adj Close']
+            data[stock] = pdr.get_data_yahoo(stock,start_date,end_date)['Adj Close']
         except:
             print('Error with stock: '+stock)
-    df = pd.DataFrame(data).reset_index()
+    df = pd.DataFrame(data)#.reset_index()
     return df
 
 
 def plot_stocks_df(df=None,stocks=['FB','AAPL']):
     if df is None:
         df = get_data(stocks)#.reset_index()
+            
+    if df.index.name=="Date":
+        df.reset_index(inplace=True)
+        
     stocks_exist = [s for s in stocks if s in df.columns]
     pfig = px.scatter(df,x='Date',y=stocks_exist)
     return pfig
 
-from jupyter_plotly_dash import JupyterDash
-app = dash.Dash(__name__)
+
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+app = dash.Dash('Example',external_stylesheets=external_stylesheets)#,
+#                   serve_locally=False)
 defaults = ['MSFT','AMZN']
 # df = get_data(date(2012, 1, 1))
 
@@ -80,6 +96,5 @@ def update_stocks(n_clicks, stocks,start_date,end_date):
     plot_df = get_data(start_date,end_date,symbols=stocks)
     return plot_stocks_df(df=plot_df,stocks=stocks)#,start_date,end_date)
     
-
-if __name__=='__main__':
-    app.run_server(debug=True)
+if __name__=="__main__":
+    app.run_server(debug=True, host='127.0.0.1')
