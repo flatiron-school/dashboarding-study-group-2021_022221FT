@@ -45,9 +45,6 @@ def plot_stocks_df(df=None, stocks=['FB', 'AAPL']):
 
 
 
-
-
-
 ## Streamlit App Starts here
 st.title('Example Streamlit App')
 
@@ -60,10 +57,10 @@ end_date = st.sidebar.date_input('End Date', datetime.date.today())
 stocks = st.sidebar.text_input('Stock Symbols (separate with a ,)','AMZN,MSFT,FB')
 
 ## Retrieve and plot selected data
-df = get_data(start_date=start_date,end_date=end_date)
+df = get_data(start_date=start_date,end_date=end_date,symbols=stocks.split(','))
 
 fig = plot_stocks_df(df, stocks=stocks.split(','))
-df.head()
+# df.head()
 
 st.plotly_chart(fig)
 
